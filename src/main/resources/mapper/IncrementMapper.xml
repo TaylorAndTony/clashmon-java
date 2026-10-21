@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mine.clashmon.mapper.IncrementMapper">
+    <!--
+        List<IncrementLog> listIncrementLogs();
+        int insertIncrementLog(IncrementLog incrementLog);
+        int deleteIncrementLog(Long id);
+    -->
+    <resultMap id="incrementLogMap" type="com.mine.clashmon.pojo.IncrementLog">
+        <id column="url_id" property="urlId"/>
+        <id column="ts" property="ts"/>
+        <result column="increment_upload" property="incrementUpload"/>
+        <result column="increment_download" property="incrementDownload"/>
+        <association property="url" javaType="com.mine.clashmon.pojo.Url">
+            <id column="id" property="id"/>
+            <result column="url" property="url"/>
+            <result column="description" property="description"/>
+            <result column="created_at" property="createdAt"/>
+            <result column="modified_at" property="modifiedAt"/>
+        </association>
+    </resultMap>
+
+    <select id="listIncrementLogs" resultMap="incrementLogMap">
+        SELECT * FROM increment_log
+        INNER JOIN url ON increment_log.url_id = url.id
+        WHERE increment_log.ts >= DATE_SUB(NOW(3), INTERVAL 1 MONTH) AND increment_log.url_id = #{id}
+    </select>
+    <insert id="insertIncrementLog" parameterType="com.mine.clashmon.pojo.IncrementLog">
+        INSERT INTO increment_log (url_id, increment_upload, increment_download)
+        VALUES (#{urlId}, #{incrementUpload}, #{incrementDownload})
+    </insert>
+    <delete id="deleteIncrementLog" parameterType="com.mine.clashmon.pojo.IncrementLog">
+        DELETE FROM increment_log WHERE id = #{id}
+    </delete>
+<!--
+    IncrementLog getLastIncrement(Long id);
+-->
+    <select id="getLastIncrement" resultType="com.mine.clashmon.pojo.IncrementLog">
+        SELECT * FROM increment_log WHERE url_id = #{id} ORDER BY ts DESC LIMIT 1
+    </select>
+</mapper>

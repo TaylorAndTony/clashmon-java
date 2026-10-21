@@ -1,0 +1,26 @@
+CREATE TABLE IF NOT EXISTS `url` (
+    `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
+    `url` VARCHAR(1024) NOT NULL,
+    `description` VARCHAR(512) NOT NULL,
+    `created_at` DATETIME(3) DEFAULT CURRENT_TIMESTAMP(3),
+    `modified_at` DATETIME(3) DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS `raw_log` (
+    `url_id` BIGINT NOT NULL,
+    `ts` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `used_upload` BIGINT NOT NULL,
+    `used_download` BIGINT NOT NULL,
+    `total` BIGINT NOT NULL,
+    PRIMARY KEY (`url_id`, `ts`),
+    CONSTRAINT `fk_rawlog_url_id` FOREIGN KEY (`url_id`) REFERENCES `url`(`id`) ON DELETE RESTRICT
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS `increment_log` (
+    `url_id` BIGINT NOT NULL,
+    `ts` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `increment_upload` BIGINT NOT NULL,
+    `increment_download` BIGINT NOT NULL,
+    PRIMARY KEY (`url_id`, `ts`),
+    CONSTRAINT `fk_incrlog_url_id` FOREIGN KEY (`url_id`) REFERENCES `url`(`id`) ON DELETE RESTRICT
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

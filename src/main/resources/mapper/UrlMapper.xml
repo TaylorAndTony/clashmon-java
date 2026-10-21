@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mine.clashmon.mapper.UrlMapper">
+<!--
+    List<Url> listUrl();
+    List<Url> listUrlFull();
+    int insertUrl(Url url);
+    int updateUrl(Url url);
+    int deleteUrl(Long id);
+-->
+    <select id="listUrl" resultType="com.mine.clashmon.pojo.Url">
+        SELECT * FROM `url`;
+    </select>
+<!--
+    int insertUrl(Url url);
+    int updateUrl(Url url);
+    int deleteUrl(Long id);
+-->
+    <insert id="insertUrl"  parameterType="com.mine.clashmon.pojo.Url">
+        INSERT INTO `url` (url, description) VALUES (#{url}, #{description})
+    </insert>
+
+    <update id="updateUrl" parameterType="com.mine.clashmon.pojo.Url">
+        UPDATE `url` SET url = #{url}, description = #{description}, modified_at = CURRENT_TIMESTAMP(3) WHERE id = #{id}
+    </update>
+
+    <delete id="deleteUrl" parameterType="com.mine.clashmon.pojo.Url">
+        DELETE FROM `url` WHERE id = #{id}
+    </delete>
+</mapper>

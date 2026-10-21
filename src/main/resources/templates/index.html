@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>订阅监控</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@6.0.0-alpha.1/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-B/GM4XqrwHnWXNOWMbloTmrYXZg10cakYGmpfsR/bbzQ6JAJI4ihuyADKLnBgrCe" crossorigin="anonymous">
+    <style>
+        .digit {
+            font-size: 2rem;
+            font-weight: bold;
+        }
+
+        .title {
+            font-size: 1.5rem;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@6.1.0/dist/echarts.min.js"></script>
+</head>
+<body>
+<div class="container">
+
+    <h1 style="margin: 30px 0;">订阅监控</h1>
+
+    <ul class="nav">
+        <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="/">订阅监控</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/manage">管理订阅</a>
+        </li>
+    </ul>
+
+    <div>
+        <div th:each="model : ${models}">
+            <div class="card">
+                <div class="card-body">
+                    <div class="card-title" th:text="${model.getUrl().getDescription() ?: '[未命名]'}">ikuuu</div>
+                    <a class="" th:text="${model.getUrl().getUrl()}">https://xxx.com</a>
+                </div>
+
+                <div class="container text-center">
+                    <div class="row">
+                        <div class="col">
+                            <div class="title">上传</div>
+                            <div class="digit" th:text="${model.getRawLogs().get(0)?.getUploadReadable() ?: '0.00 GB'}">
+                                762.52 MB
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="title">下载</div>
+                            <div class="digit"
+                                 th:text="${model.getRawLogs().get(0)?.getDownloadReadable() ?: '0.00 GB'}">41.18 GB
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="title">总量</div>
+                            <div class="digit" th:text="${model.getRawLogs().get(0)?.getTotalReadable() ?: '0.00 GB'}">
+                                300.00 GB
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display: flex; flex-direction: column; justify-content: space-around; align-items: center; flex-wrap: wrap">
+                    <div>
+                        <h3 class="mt-10">总流量</h3>
+                        <div class="chart" style="width: 1000px;height: 400px"
+                             th:attr="data-id=${model.getUrl().getId()}">
+
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3 class="mt-10">变化量</h3>
+                        <div class="chart-incr" style="width: 1000px;height: 400px"
+                             th:attr="data-id=${model.getUrl().getId()}">
+
+                        </div>
+                    </div>
+
+
+                </div>
+
+            </div>
+        </div>
+
+
+    </div>
+    <script type="module" src="https://cdn.jsdelivr.net/npm/bootstrap@6.0.0-alpha.1/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-1a/pXj49ZQ1aHEmrJ+gMw1otqoVsYwlEnlD8mIfY2TV03r20Y0CN7uqx1tQogjPL"
+            crossorigin="anonymous"></script>
+
+
+    <script>
+        function initOneTotalChart(chart) {
+            const id = chart.getAttribute('data-id');
+            console.log('init chart for: ', id);
+            // 基于准备好的dom，初始化echarts实例
+            fetch(`/api/data/raw/${id}`)
+                .then(response => response.json())
+                .then(data => {
+                    var myChart = echarts.init(chart);
+
+                    // 指定图表的配置项和数据
+                    var option = {
+                        backgroundColor: 'transparent',
+                        color: ['#00d4aa', '#4da6ff', '#b388ff'],
+                        tooltip: {
+                            trigger: 'axis',
+                            backgroundColor: 'rgba(30,30,45,0.95)',
+                            borderColor: 'rgba(255,255,255,0.1)',
+                            textStyle: {color: '#e0e0e0', fontSize: 12},
+                            axisPointer: {
+                                type: 'line',
+                                lineStyle: {color: 'rgba(255,255,255,0.3)', type: 'dashed'}
+                            },
+                            formatter: function (params) {
+                                let html = `<div style="font-weight:600;margin-bottom:6px;color:#fff">${params[0].axisValue}</div>`;
+                                params.forEach(p => {
+                                    const gb = (p.value / 1024).toFixed(2);
+                                    html += `<div style="display:flex;align-items:center;gap:6px;min-width:140px">
+                    <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${p.color}"></span>
+                    <span style="color:#aaa">${p.seriesName}</span>
+                    <span style="margin-left:auto;font-weight:600;color:#fff">${gb} GB</span>
+                </div>`;
+                                });
+                                return html;
+                            }
+                        },
+                        legend: {
+                            data: ['上传', '下载', '总量'],
+                            top: 0,
+                            icon: 'roundRect',
+                            itemWidth: 14,
+                            itemHeight: 4,
+                            textStyle: {color: '#aaa'}
+                        },
+                        grid: {
+                            left: '3%',
+                            right: '4%',
+                            top: 40,
+                            bottom: 60,
+                            containLabel: true
+                        },
+                        toolbox: {
+                            feature: {
+                                saveAsImage: {
+                                    backgroundColor: '#1a1b26'
+                                }
+                            },
+                            right: 10,
+                            iconStyle: {borderColor: '#888'}
+                        },
+                        dataZoom: [
+                            {type: 'inside', start: 0, end: 100},
+                            {
+                                type: 'slider',
+                                height: 20,
+                                bottom: 10,
+                                borderColor: 'rgba(255,255,255,0.1)',
+                                fillerColor: 'rgba(77,166,255,0.2)',
+                                textStyle: {color: '#888'}
+                            }
+                        ],
+                        xAxis: {
+                            type: 'category',
+                            data: data.data.dates,
+                            boundaryGap: false,
+                            axisLine: {lineStyle: {color: 'rgba(255,255,255,0.15)'}},
+                            axisTick: {show: false},
+                            axisLabel: {
+                                color: '#888',
+                                formatter: function (val) {
+                                    const d = new Date(val);
+                                    return d.getHours().toString().padStart(2, '0') + ':' + d.getMinutes().toString().padStart(2, '0');
+                                }
+                            }
+                        },
+                        yAxis: {
+                            type: 'value',
+                            splitLine: {lineStyle: {color: 'rgba(255,255,255,0.06)', type: 'dashed'}},
+                            axisLabel: {
+                                color: '#888',
+                                formatter: function (val) {
+                                    return (val / 1024).toFixed(1) + ' GB';
+                                }
+                            }
+                        },
+                        series: [
+                            {
+                                name: '上传',
+                                type: 'line',
+                                step: 'middle',
+                                symbol: 'circle',
+                                symbolSize: 6,
+                                showSymbol: false,
+                                data: data.data.uploadValues.map(v => v / 1024 / 1024),
+                                areaStyle: {
+                                    opacity: 0.12,
+                                    color: {
+                                        type: 'linear', x: 0, y: 0, x2: 0, y2: 1,
+                                        colorStops: [
+                                            {offset: 0, color: 'rgba(0,212,170,0.4)'},
+                                            {offset: 1, color: 'rgba(0,212,170,0)'}
+                                        ]
+                                    }
+                                },
+                                lineStyle: {width: 2}
+                            },
+                            {
+                                name: '下载',
+                                type: 'line',
+                                step: 'middle',
+                                symbol: 'circle',
+                                symbolSize: 6,
+                                showSymbol: false,
+                                data: data.data.downloadValues.map(v => v / 1024 / 1024),
+                                areaStyle: {
+                                    opacity: 0.12,
+                                    color: {
+                                        type: 'linear', x: 0, y: 0, x2: 0, y2: 1,
+                                        colorStops: [
+                                            {offset: 0, color: 'rgba(77,166,255,0.4)'},
+                                            {offset: 1, color: 'rgba(77,166,255,0)'}
+                                        ]
+                                    }
+                                },
+                                lineStyle: {width: 2}
+                            },
+                            {
+                                name: '总量',
+                                type: 'line',
+                                step: 'middle',
+                                symbol: 'circle',
+                                symbolSize: 6,
+                                showSymbol: false,
+                                data: data.data.totalValues.map(v => v / 1024 / 1024),
+                                areaStyle: {
+                                    opacity: 0.06,
+                                    color: {
+                                        type: 'linear', x: 0, y: 0, x2: 0, y2: 1,
+                                        colorStops: [
+                                            {offset: 0, color: 'rgba(179,136,255,0.3)'},
+                                            {offset: 1, color: 'rgba(179,136,255,0)'}
+                                        ]
+                                    }
+                                },
+                                lineStyle: {width: 2, type: 'dashed'}
+                            }
+                        ]
+                    };
+
+                    // 使用刚指定的配置项和数据显示图表。
+                    myChart.setOption(option);
+                })
+
+        }
+
+
+        function initOneIncrChart(chart) {
+            const id = chart.getAttribute('data-id');
+            console.log('init incr chart for: ', id);
+            fetch(`/api/data/increment/${id}`)
+                .then(response => response.json())
+                .then(data => {
+                    var myChart = echarts.init(chart);
+
+                    // 指定图表的配置项和数据
+                    var option = {
+                        backgroundColor: 'transparent',
+                        color: ['#00d4aa', '#4da6ff'],
+                        tooltip: {
+                            trigger: 'axis',
+                            backgroundColor: 'rgba(30,30,45,0.95)',
+                            borderColor: 'rgba(255,255,255,0.1)',
+                            textStyle: {color: '#e0e0e0', fontSize: 12},
+                            axisPointer: {
+                                type: 'line',
+                                lineStyle: {color: 'rgba(255,255,255,0.3)', type: 'dashed'}
+                            },
+                            formatter: function (params) {
+                                let html = `<div style="font-weight:600;margin-bottom:6px;color:#fff">${params[0].axisValue}</div>`;
+                                params.forEach(p => {
+                                    const mb = p.value.toFixed(2);
+                                    html += `<div style="display:flex;align-items:center;gap:6px;min-width:150px">
+                    <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${p.color}"></span>
+                    <span style="color:#aaa">${p.seriesName}</span>
+                    <span style="margin-left:auto;font-weight:600;color:#fff">${mb} MB</span>
+                </div>`;
+                                });
+                                return html;
+                            }
+                        },
+                        legend: {
+                            data: ['上传变化量', '下载变化量'],
+                            top: 0,
+                            icon: 'roundRect',
+                            itemWidth: 14,
+                            itemHeight: 4,
+                            textStyle: {color: '#aaa'}
+                        },
+                        grid: {
+                            left: '3%',
+                            right: '4%',
+                            top: 40,
+                            bottom: 60,
+                            containLabel: true
+                        },
+                        toolbox: {
+                            feature: {
+                                saveAsImage: {
+                                    backgroundColor: '#1a1b26'
+                                }
+                            },
+                            right: 10,
+                            iconStyle: {borderColor: '#888'}
+                        },
+                        dataZoom: [
+                            {type: 'inside', start: 0, end: 100},
+                            {
+                                type: 'slider',
+                                height: 20,
+                                bottom: 10,
+                                borderColor: 'rgba(255,255,255,0.1)',
+                                fillerColor: 'rgba(77,166,255,0.2)',
+                                textStyle: {color: '#888'}
+                            }
+                        ],
+                        xAxis: {
+                            type: 'category',
+                            data: data.data.dates,
+                            boundaryGap: false,
+                            axisLine: {lineStyle: {color: 'rgba(255,255,255,0.15)'}},
+                            axisTick: {show: false},
+                            axisLabel: {
+                                color: '#888',
+                                formatter: function (val) {
+                                    const d = new Date(val);
+                                    return d.getHours().toString().padStart(2, '0') + ':' + d.getMinutes().toString().padStart(2, '0');
+                                }
+                            }
+                        },
+                        yAxis: {
+                            type: 'value',
+                            splitLine: {lineStyle: {color: 'rgba(255,255,255,0.06)', type: 'dashed'}},
+                            axisLabel: {
+                                color: '#888',
+                                formatter: function (val) {
+                                    return val.toFixed(1) + ' MB';
+                                }
+                            }
+                        },
+                        series: [
+                            {
+                                name: '上传变化量',
+                                type: 'line',
+                                step: 'middle',
+                                symbol: 'circle',
+                                symbolSize: 6,
+                                showSymbol: false,
+                                data: data.data.uploadValues.map(v => v / 1024 / 1024),
+                                areaStyle: {
+                                    opacity: 0.12,
+                                    color: {
+                                        type: 'linear', x: 0, y: 0, x2: 0, y2: 1,
+                                        colorStops: [
+                                            {offset: 0, color: 'rgba(0,212,170,0.4)'},
+                                            {offset: 1, color: 'rgba(0,212,170,0)'}
+                                        ]
+                                    }
+                                },
+                                lineStyle: {width: 2}
+                            },
+                            {
+                                name: '下载变化量',
+                                type: 'line',
+                                step: 'middle',
+                                symbol: 'circle',
+                                symbolSize: 6,
+                                showSymbol: false,
+                                data: data.data.downloadValues.map(v => v / 1024 / 1024),
+                                areaStyle: {
+                                    opacity: 0.12,
+                                    color: {
+                                        type: 'linear', x: 0, y: 0, x2: 0, y2: 1,
+                                        colorStops: [
+                                            {offset: 0, color: 'rgba(77,166,255,0.4)'},
+                                            {offset: 1, color: 'rgba(77,166,255,0)'}
+                                        ]
+                                    }
+                                },
+                                lineStyle: {width: 2}
+                            }
+                        ]
+                    };
+
+
+                    // 使用刚指定的配置项和数据显示图表。
+                    myChart.setOption(option);
+                })
+
+        }
+
+        function initChart() {
+            const charts = document.querySelectorAll('.chart');
+            const chartsIncr = document.querySelectorAll('.chart-incr');
+            for (const chart of charts) {
+                initOneTotalChart(chart);
+            }
+            for (const chart of chartsIncr) {
+                initOneIncrChart(chart);
+            }
+        }
+
+        initChart();
+    </script>
+
+</body>
+</html>
