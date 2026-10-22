@@ -26,7 +26,27 @@
         UPDATE `url` SET url = #{url}, description = #{description}, modified_at = CURRENT_TIMESTAMP(3) WHERE id = #{id}
     </update>
 
+<!--
+
+    int updateUrlByIdUrlDesc(Long id, String url, String desc);
+    -->
+    <update id="updateUrlByIdUrlDesc">
+        UPDATE `url` SET url = #{url}, description = #{desc}, modified_at = CURRENT_TIMESTAMP(3) WHERE id = #{id}
+    </update>
+
     <delete id="deleteUrl" parameterType="com.mine.clashmon.pojo.Url">
         DELETE FROM `url` WHERE id = #{id}
+    </delete>
+
+    <delete id="deleteRawLogByUrlId">
+        DELETE FROM raw_log WHERE url_id = #{id}
+    </delete>
+
+    <delete id="deleteIncrementLogByUrlId">
+        DELETE FROM increment_log WHERE url_id = #{id}
+    </delete>
+
+    <delete id="deleteUrlById">
+        DELETE FROM url WHERE id = #{id}
     </delete>
 </mapper>

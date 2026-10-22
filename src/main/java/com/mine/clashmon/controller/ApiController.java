@@ -5,6 +5,7 @@ import com.mine.clashmon.mapper.RawLogMapper;
 import com.mine.clashmon.mapper.UrlMapper;
 import com.mine.clashmon.pojo.IncrementLog;
 import com.mine.clashmon.pojo.RawLog;
+import com.mine.clashmon.service.DeleteService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,10 +22,13 @@ public class ApiController {
     private RawLogMapper rawLogMapper;
     @Autowired
     private IncrementMapper incrementMapper;
+    @Autowired
+    private DeleteService deleteService;
+
 
     @DeleteMapping("delete/{id}")
     public Map<String, Object> delete(@PathVariable Long id) {
-        urlMapper.deleteUrl(id);
+        deleteService.forceDelete(id);
         return Map.of(
                 "success", true
         );
@@ -61,6 +65,28 @@ public class ApiController {
                         "uploadValues", uploadValues,
                         "downloadValues", downloadValues
                 )
+        );
+    }
+
+    @PostMapping("update/{id}")
+    public Map<String, Object> update(@PathVariable Long id, @RequestBody Map<String, Object> data) {
+        /**
+         * {
+         *   "url": "xxx",
+         *   "desc": "xxx"
+         * }
+         */
+        if (!data.containsKey("url") || !data.containsKey("desc")) {
+            return Map.of(
+                    "success", false,
+                    "message", "Missing parameters"
+            );
+        }
+        String url = (String) data.get("url");
+        String desc = (String) data.get("desc");
+        urlMapper.updateUrlByIdUrlDesc(id, url, desc);
+        return Map.of(
+                "success", true
         );
     }
 }

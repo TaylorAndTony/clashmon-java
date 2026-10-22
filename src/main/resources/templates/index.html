@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <title>订阅监控</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@6.0.0-alpha.1/dist/css/bootstrap.min.css" rel="stylesheet"
-          integrity="sha384-B/GM4XqrwHnWXNOWMbloTmrYXZg10cakYGmpfsR/bbzQ6JAJI4ihuyADKLnBgrCe" crossorigin="anonymous">
+<!--    <link href="https://cdn.jsdelivr.net/npm/bootstrap@6.0.0-alpha.1/dist/css/bootstrap.min.css" rel="stylesheet"-->
+<!--          integrity="sha384-B/GM4XqrwHnWXNOWMbloTmrYXZg10cakYGmpfsR/bbzQ6JAJI4ihuyADKLnBgrCe" crossorigin="anonymous">-->
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
     <style>
         .digit {
             font-size: 2rem;
@@ -15,7 +16,8 @@
             font-size: 1.5rem;
         }
     </style>
-    <script src="https://cdn.jsdelivr.net/npm/echarts@6.1.0/dist/echarts.min.js"></script>
+<!--    <script src="https://cdn.jsdelivr.net/npm/echarts@6.1.0/dist/echarts.min.js"></script>-->
+    <script src="/js/echarts.min.js"></script>
 </head>
 <body>
 <div class="container">
@@ -43,19 +45,19 @@
                     <div class="row">
                         <div class="col">
                             <div class="title">上传</div>
-                            <div class="digit" th:text="${model.getRawLogs().get(0)?.getUploadReadable() ?: '0.00 GB'}">
+                            <div class="digit" th:text="${model.getRawLogs().isEmpty() ? '0.00 GB' : model.getRawLogs().get(0)?.getUploadReadable()}">
                                 762.52 MB
                             </div>
                         </div>
                         <div class="col">
                             <div class="title">下载</div>
                             <div class="digit"
-                                 th:text="${model.getRawLogs().get(0)?.getDownloadReadable() ?: '0.00 GB'}">41.18 GB
+                                 th:text="${model.getRawLogs().isEmpty() ? '0.00 GB' : model.getRawLogs().get(0)?.getDownloadReadable()}">41.18 GB
                             </div>
                         </div>
                         <div class="col">
                             <div class="title">总量</div>
-                            <div class="digit" th:text="${model.getRawLogs().get(0)?.getTotalReadable() ?: '0.00 GB'}">
+                            <div class="digit" th:text="${model.getRawLogs().isEmpty() ? '0.00 GB' : model.getRawLogs().get(0)?.getTotalReadable()}">
                                 300.00 GB
                             </div>
                         </div>
@@ -87,9 +89,10 @@
 
 
     </div>
-    <script type="module" src="https://cdn.jsdelivr.net/npm/bootstrap@6.0.0-alpha.1/dist/js/bootstrap.bundle.min.js"
-            integrity="sha384-1a/pXj49ZQ1aHEmrJ+gMw1otqoVsYwlEnlD8mIfY2TV03r20Y0CN7uqx1tQogjPL"
-            crossorigin="anonymous"></script>
+<!--    <script type="module" src="https://cdn.jsdelivr.net/npm/bootstrap@6.0.0-alpha.1/dist/js/bootstrap.bundle.min.js"-->
+<!--            integrity="sha384-1a/pXj49ZQ1aHEmrJ+gMw1otqoVsYwlEnlD8mIfY2TV03r20Y0CN7uqx1tQogjPL"-->
+<!--            crossorigin="anonymous"></script>-->
+    <script src="/js/bootstrap.bundle.min.js"></script>
 
 
     <script>
