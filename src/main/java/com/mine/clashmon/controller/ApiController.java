@@ -6,6 +6,8 @@ import com.mine.clashmon.mapper.UrlMapper;
 import com.mine.clashmon.pojo.IncrementLog;
 import com.mine.clashmon.pojo.RawLog;
 import com.mine.clashmon.service.DeleteService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,6 +27,7 @@ public class ApiController {
     @Autowired
     private DeleteService deleteService;
 
+    private static final Logger logger = LoggerFactory.getLogger(ApiController.class);
 
     @DeleteMapping("delete/{id}")
     public Map<String, Object> delete(@PathVariable Long id) {
@@ -41,6 +44,7 @@ public class ApiController {
         List<Long> uploadValues = allLogs.stream().map(RawLog::getUsedUpload).toList();
         List<Long> downloadValues = allLogs.stream().map(RawLog::getUsedDownload).toList();
         List<Long> totalValues = allLogs.stream().map(RawLog::getTotal).toList();
+        logger.info("Generated {} data points", dates.size());
         return Map.of(
                 "success", true,
                 "data", Map.of(
@@ -58,6 +62,7 @@ public class ApiController {
         List<LocalDateTime> dates = allIncrementLogs.stream().map(IncrementLog::getTs).toList();
         List<Long> uploadValues = allIncrementLogs.stream().map(IncrementLog::getIncrementUpload).toList();
         List<Long> downloadValues = allIncrementLogs.stream().map(IncrementLog::getIncrementDownload).toList();
+        logger.info("Generated {} data points", dates.size());
         return Map.of(
                 "success", true,
                 "data", Map.of(
@@ -77,6 +82,7 @@ public class ApiController {
          * }
          */
         if (!data.containsKey("url") || !data.containsKey("desc")) {
+            logger.warn("Missing parameters, data is {}", data);
             return Map.of(
                     "success", false,
                     "message", "Missing parameters"

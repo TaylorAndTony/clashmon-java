@@ -1,6 +1,7 @@
 application.yaml
 local/
-
+logs/
+*.log
 
 HELP.md
 target/

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<configuration>
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>logs/app.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>logs/app.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <root level="DEBUG">
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="FILE"/>
+    </root>
+
+    <!-- 只把你自己业务包设置 DEBUG，这里改成你的包名 com.mine.clashmon -->
+    <logger name="com.mine.clashmon" level="DEBUG" additivity="true"/>
+
+    <!-- 【可选】精细化屏蔽某些嘈杂框架日志，按需打开 -->
+    <!-- MyBatis：如果想看SQL，就设DEBUG；不想看就INFO/WARN -->
+    <logger name="com.mine.clashmon.mapper" level="DEBUG"/>
+    <!-- Spring 容器、自动配置、tomcat 这类很吵的包，直接WARN -->
+    <logger name="org.springframework" level="WARN"/>
+    <logger name="org.apache.tomcat" level="WARN"/>
+    <logger name="com.zaxxer.hikari" level="WARN"/>
+    <logger name="org.mybatis" level="INFO"/>
+    <logger name="org.springframework.web" level="INFO"/>
+</configuration>

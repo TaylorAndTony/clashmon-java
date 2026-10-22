@@ -6,6 +6,8 @@ import com.mine.clashmon.mapper.RawLogMapper;
 import com.mine.clashmon.mapper.UrlMapper;
 import com.mine.clashmon.pojo.IndexModel;
 import com.mine.clashmon.pojo.Url;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -22,6 +24,8 @@ public class IndexController {
     private RawLogMapper rawLogMapper;
     @Autowired
     private IncrementMapper incrementMapper;
+
+    private static final Logger logger = LoggerFactory.getLogger(IndexController.class);
 
     @GetMapping("/")
     public String index(Model model) {
@@ -47,11 +51,11 @@ public class IndexController {
         model.addAttribute("urlList", urlMapper.listUrl()); // 添加URL列表
 
         if (link != null && link != "") {
-            System.out.println("link: " + link);
+            logger.info("link: {}", link);
             var allUrls = urlMapper.listUrl();
             for (Url u : allUrls) {
                 if (u.getUrl().equals(link)) {
-                    System.err.println("Url already exists");
+                    logger.warn("Url already exists");
                     return "redirect:/manage";
                 }
             }
@@ -61,7 +65,7 @@ public class IndexController {
             url.setCreatedAt(java.time.LocalDateTime.now()); // Set current timestamp
             url.setModifiedAt(java.time.LocalDateTime.now()); // Set current timestamp
             urlMapper.insertUrl(url);
-            System.err.println("Url inserted successfully");
+            logger.info("Url inserted successfully");
             return "redirect:/manage";
         }
         return "manage";
