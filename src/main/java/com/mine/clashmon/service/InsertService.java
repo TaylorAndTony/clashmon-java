@@ -15,28 +15,30 @@ public class InsertService {
     private RawLogMapper rawLogMapper;
     private IncrementMapper incrementMapper;
 
-    public InsertService(UrlMapper urlMapper, RawLogMapper rawLogMapper, IncrementMapper incrementMapper){
+    public InsertService(UrlMapper urlMapper, RawLogMapper rawLogMapper, IncrementMapper incrementMapper) {
         this.urlMapper = urlMapper;
         this.rawLogMapper = rawLogMapper;
         this.incrementMapper = incrementMapper;
     }
 
-    public void insertClashResult(long urlId, ClashResult clashResult){
+    public void insertClashResult(long urlId, ClashResult clashResult) {
+        RawLog lastLog = rawLogMapper.getLastRawLog(urlId);
+
         RawLog newLog = new RawLog();
         newLog.setUrlId(urlId);
         newLog.setUsedUpload(clashResult.getUpload());
         newLog.setUsedDownload(clashResult.getDownload());
         newLog.setTotal(clashResult.getTotal());
-        rawLogMapper.insertRawLog(newLog);
-        RawLog lastLog = rawLogMapper.getLastRawLog(urlId);
 
-        Long uploadChanged = lastLog.getUsedUpload() - rawLogMapper.getLastRawLog(urlId).getUsedUpload();
-        Long downloadChanged = lastLog.getUsedDownload() - rawLogMapper.getLastRawLog(urlId).getUsedDownload();
+        Long uploadChanged = newLog.getUsedUpload() - lastLog.getUsedUpload();
+        Long downloadChanged = newLog.getUsedDownload() - lastLog.getUsedDownload();
 
         IncrementLog incrementLog = new IncrementLog();
         incrementLog.setUrlId(urlId);
         incrementLog.setIncrementUpload(Math.max(uploadChanged, 0L));
         incrementLog.setIncrementDownload(Math.max(downloadChanged, 0L));
         incrementMapper.insertIncrementLog(incrementLog);
+        rawLogMapper.insertRawLog(newLog);
+
     }
 }
