@@ -50,6 +50,10 @@ public class IncrementLog {
         return ts;
     }
 
+    public LocalDateTime getTsUtc8() {
+        return ts.plusHours(8);
+    }
+
     public void setTs(LocalDateTime ts) {
         this.ts = ts;
     }

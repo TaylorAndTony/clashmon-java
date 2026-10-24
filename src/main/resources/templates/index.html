@@ -45,19 +45,19 @@
                     <div class="row">
                         <div class="col">
                             <div class="title">上传</div>
-                            <div class="digit" th:text="${model.getRawLogs().isEmpty() ? '0.00 GB' : model.getRawLogs().get(0)?.getUploadReadable()}">
+                            <div class="digit" th:text="${model.getRawLogs().isEmpty() ? '0.00 GB' : model.getRawLogs().getLast()?.getUploadReadable()}">
                                 762.52 MB
                             </div>
                         </div>
                         <div class="col">
                             <div class="title">下载</div>
                             <div class="digit"
-                                 th:text="${model.getRawLogs().isEmpty() ? '0.00 GB' : model.getRawLogs().get(0)?.getDownloadReadable()}">41.18 GB
+                                 th:text="${model.getRawLogs().isEmpty() ? '0.00 GB' : model.getRawLogs().getLast()?.getDownloadReadable()}">41.18 GB
                             </div>
                         </div>
                         <div class="col">
                             <div class="title">总量</div>
-                            <div class="digit" th:text="${model.getRawLogs().isEmpty() ? '0.00 GB' : model.getRawLogs().get(0)?.getTotalReadable()}">
+                            <div class="digit" th:text="${model.getRawLogs().isEmpty() ? '0.00 GB' : model.getRawLogs().getLast()?.getTotalReadable()}">
                                 300.00 GB
                             </div>
                         </div>
