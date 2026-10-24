@@ -12,11 +12,12 @@ public class Web {
     public static ClashResult getClashResult(String url) {
         OkHttpClient client = new OkHttpClient()
                 .newBuilder()
-                .addInterceptor(new RetryInterceptor(3, 3000))
+//                .addInterceptor(new RetryInterceptor(3, 3000))
                 .build();
         Request req = new Request.Builder()
+                .header("User-Agent", "clash")
                 .url(url)
-                .get()
+                .head()
                 .build();
 
         try (Response resp = client.newCall(req).execute()) {
@@ -32,8 +33,8 @@ public class Web {
             }
 
             // 单独取
-            String userInfo = resp.header("subscription-userinfo");
-            String disp = resp.header("content-disposition");
+            final String userInfo = resp.header("subscription-userinfo");
+            final String disp = resp.header("content-disposition");
             System.out.println("\nsubscription-userinfo: " + userInfo);
             System.out.println("content-disposition: " + disp);
             /**
@@ -41,19 +42,36 @@ public class Web {
              * upload=799532839; download=44214770768; total=322122547200; expire=1792652654
              *
              */
-            final Pattern pattern = Pattern.compile("upload=(\\d+); download=(\\d+); total=(\\d+); expire=(\\d+)");
-            Matcher matcher = pattern.matcher(userInfo);
-            if (matcher.find()) {
-                long upload = Long.parseLong(matcher.group(1));
-                long download = Long.parseLong(matcher.group(2));
-                long total = Long.parseLong(matcher.group(3));
-                long expire = Long.parseLong(matcher.group(4));
-                System.out.println("upload: " + upload + ", download: " + download + ", total: " + total + ", expire: " + expire);
-                return new ClashResult(upload, download, total);
+            if (userInfo == null) {
+                return new ClashResult(0, 0, 0);
             }
+            long upload = 0;
+            long download = 0;
+            long total = 0;
+// 按分号+空格切分，兼容标准 subscription-userinfo 格式
+            String[] parts = userInfo.split("; ");
+            for (String part : parts) {
+                String[] kv = part.split("=");
+                if (kv.length != 2) continue;
+                String key = kv[0].trim();
+                String val = kv[1].trim();
+                try {
+                    long num = Long.parseLong(val);
+                    switch (key) {
+                        case "upload": upload = num; break;
+                        case "download": download = num; break;
+                        case "total": total = num; break;
+                        // expire 你暂时不用，可以忽略
+                    }
+                } catch (NumberFormatException ignored) {
+                    // 数字解析失败直接跳过，容错
+                }
+            }
+            System.out.println("upload: " + upload + ", download: " + download + ", total: " + total);
+            return new ClashResult(upload, download, total);
         } catch (Exception e) {
             e.printStackTrace();
+            return new ClashResult(0, 0, 0);
         }
-        return null;
     }
 }
